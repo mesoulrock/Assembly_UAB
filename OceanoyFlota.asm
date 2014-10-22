@@ -67,6 +67,7 @@ Op2:
 	call PosicionarFlota
 	jmp Op0 
 Op3:
+	call Jugar
 	jmp Op0
 Op4: 
 ret
@@ -134,6 +135,7 @@ loopResetCol:
  
 loopBarcos1Ud:
  push eax									;Guardamos el valor de eax, lo necesitamos para mas tarde
+ push ecx									;Guardamos ecx porque INVOKE alterará su valor
  INVOKE GenerarPosicionAleatoria, DimOce	;Obtenemos la fila
  dec eax									;Compensamos para que el rango empiece en 0 en vez de 1
  imul eax, 12								;Calculamos el offset para las filas (6 posiciones * 2 bytes)
@@ -142,6 +144,7 @@ loopBarcos1Ud:
  INVOKE GenerarPosicionAleatoria, DimOce	;Obtenemos la columna
  mov ebx, eax								;Guardamos la columna en ebx, luego la usaremos para calcular el offset de la posicion
  pop edx
+ pop ecx
 
  mov eax, [edx+ebx*2]
  cmp eax, 0
@@ -158,6 +161,34 @@ PosicionarFlota ENDP
 
 MostrarOceanoyFlota PROC
 ; Permite recorrer la matriz generada y mostrarla por pantalla
+  
+ mov eax, 0	;Guardará el inicio de cada fila
+ mov ebx, 0 ;Guardará el desplazamiento por columnas
+ mov ecx, 0 ;Guardará el numero de columna para la función
+ mov edx, 0 ;Contendrá la direccion efectiva de cada fila
+loopShowFil:
+ push eax
+ imul eax, 12
+ lea edx, [Oceano+eax]
+ mov ebx, 0
+ mov ecx, 1
+ pop eax
+loopShowCol:
+ push eax
+ mov eax, [edx+ebx*2]
+ push edx
+ push ecx
+ INVOKE MostrarOceano, eax, ecx
+ pop ecx
+ pop edx
+ pop eax
+ inc ebx
+ inc ecx
+ cmp ecx, 6
+ jle loopShowCol
+ inc eax
+ cmp eax, 6
+ jne loopShowFil
 
 
 
@@ -167,7 +198,7 @@ MostrarOceanoyFlota ENDP
 
 MostrarJuego PROC
 ; Permite recorrer la matriz y mostrarla por pantalla con el simbolo '-'
-
+  
 
 
 
@@ -186,6 +217,7 @@ Espera ENDP
 Jugar PROC
 ; Permite controlar toda la lÃ³gica del juego
   
+  call MostrarOceanoyFlota
 
 
 
