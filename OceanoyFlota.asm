@@ -90,6 +90,7 @@ DefinirParametros PROC
  cmp eax, 0
  jle t2 
  mov NBarcos1Unidad, eax
+ mov NBarcos2Unidad, 1
 
  ;A implementar en otros niveles
  ;INVOKE IntroducirNumBarcosDosUnidad
