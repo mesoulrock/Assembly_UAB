@@ -155,33 +155,33 @@ loopBarcos1Ud:
  cmp eax, 0									;Comprobamos si ya hemos colocado todos los barcos
  jg loopBarcos1Ud
 
-
-
-
-
 ;Posiciones barcos de 2 unidades
 mov eax, NBarcos2Unidades
 mov ebx, 0
 mov ecx, 2 ;Consideramos 2 como un barco de 2 unidades
 mov edx, 0
 
-
-
 loopBarcos2Ud:
- push eax								
+ push eax
+ push ecx								
  INVOKE GenerarPosicionAleatoria, DimOce
+ pop ecx
  dec eax									
  imul eax, 12								
  lea edx, [Oceano+eax]					
- push edx							
+ push edx
+ push ecx							
  INVOKE GenerarPosicionAleatoria, DimOce
+ pop ecx
  mov ebx, eax							
  pop edx
  mov eax, [edx+ebx*2]
  cmp eax, 0
  jne loopBarcos2Ud            ; Si no saltamos aqui,quiere decir que podemos ocupar la casilla que nos ha salido. Pero hay que comprobar el segundo "espacio" que ha de ocupar el barco
  push edx
+ push ecx
  INVOKE GenerarPosicionAleatoria, 4         ;Generamos un valor del 1 al 4 para saber en que direccion orientamos el barco
+ pop ecx
  pop edx
  push edx
  push ebx
