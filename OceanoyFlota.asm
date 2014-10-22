@@ -183,7 +183,7 @@ loopBarcos2Ud:
  push edx
  push ebx
  
- Or_left:                                     ; Orientado hacia la izquierda
+ ; Or_left:                                      Orientado hacia la izquierda
  cmp eax, 1 
  jne Or_right
  dec ebx                                      ;Colocaremos el otro 2 a la izquierda de la casilla que se nos dio. Para ello resto 1 a ebx 
