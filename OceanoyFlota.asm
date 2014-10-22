@@ -132,19 +132,22 @@ loopResetCol:
  mov edx, 0;
  
 loopBarcos1Ud:
- push eax									;Guardamos el valor de eax, lo necesitamos para mas tarde
- INVOKE GenerarPosicionAleatoria, DimOce	;Obtenemos la fila
- dec eax									;Compensamos para que el rango empiece en 0 en vez de 1
- imul eax, 12								;Calculamos el offset para las filas (6 posiciones * 2 bytes)
- lea edx, [Oceano+eax]						;Calculamos la dirección de inicio de la fila y la guardamos en edx
- INVOKE GenerarPosicionAleatoria, DimOce	;Obtenemos la columna
- mov ebx, eax								;Guardamos la columna en ebx, luego la usaremos para calcular el offset de la posicion
- pop eax									;Recuperamos eax, nuestro "contador"
+ push eax                                   ;Guardamos el valor de eax, lo necesitamos para mas tarde
+ INVOKE GenerarPosicionAleatoria, DimOce    ;Obtenemos la fila
+ dec eax                                    ;Compensamos para que el rango empiece en 0 en vez de 1
+ imul eax, 12                               ;Calculamos el offset para las filas (6 posiciones * 2 bytes)
+ lea edx, [Oceano+eax]                      ;Calculamos la dirección de inicio de la fila y la guardamos en edx
+ push edx                                   ;Guardamos edx para evitar perdidas
+ INVOKE GenerarPosicionAleatoria, DimOce    ;Obtenemos la columna
+ dec ebx
+ mov ebx, eax                               ;Guardamos la columna en ebx, luego la usaremos para calcular el offset de la posicion
+ pop edx                                    ;Recuperamos edx, nuestra direccion de fila
+ pop eax                                    ;Recuperamos eax, nuestro "contador"
 
- mov [edx+ebx*2], ecx						;Posicionamos un barco en la posicion designada
- dec eax									;Decrementamos el contador
- cmp eax, 0									;Comprobamos si ya hemos colocado todos los barcos
- jg loopBarcos1UD
+ mov [edx+ebx*2], ecx                       ;Posicionamos un barco en la posicion designada
+ dec eax                                    ;Decrementamos el contador
+ cmp eax, 0                                 ;Comprobamos si ya hemos colocado todos los barcos
+ jg loopBarcos1Ud
 
  ret
 PosicionarFlota ENDP
