@@ -138,11 +138,16 @@ loopBarcos1Ud:
  dec eax									;Compensamos para que el rango empiece en 0 en vez de 1
  imul eax, 12								;Calculamos el offset para las filas (6 posiciones * 2 bytes)
  lea edx, [Oceano+eax]						;Calculamos la dirección de inicio de la fila y la guardamos en edx
+ push edx									;Guardamos edx para no perder la direccion
  INVOKE GenerarPosicionAleatoria, DimOce	;Obtenemos la columna
  mov ebx, eax								;Guardamos la columna en ebx, luego la usaremos para calcular el offset de la posicion
- pop eax									;Recuperamos eax, nuestro "contador"
+ pop edx
 
+ mov eax, [edx+ebx*2]
+ cmp eax, 0
+ jne loopBarcos1Ud
  mov [edx+ebx*2], ecx						;Posicionamos un barco en la posicion designada
+ pop eax									;Recuperamos eax, nuestro "contador"
  dec eax									;Decrementamos el contador
  cmp eax, 0									;Comprobamos si ya hemos colocado todos los barcos
  jg loopBarcos1Ud
