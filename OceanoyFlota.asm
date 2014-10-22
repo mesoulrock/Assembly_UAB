@@ -6,7 +6,7 @@
 .586
 .MODEL FLAT, C
 
-;Definici髇 cabeceras funciones C
+;Definici贸n cabeceras funciones C
 IntroducirOpcion PROTO C
 IntroducirDimensionOceano PROTO C
 IntroducirNumBarcosUnaUnidad PROTO C
@@ -43,9 +43,9 @@ PosCol DWORD ?
 OceanoyFlota PROC C
 ;----------------------------------------------
 ; Crear el juego de HUNDIR LA FLOTA.
-; Definici髇 del menu en asm donde dependiendo de la 
-; opci髇 introducida  por el usuario
-; se realizar醤 las diferentes opciones 
+; Definici贸n del menu en asm donde dependiendo de la 
+; opci贸n introducida  por el usuario
+; se realizar谩n las diferentes opciones 
 ; explicadas en el enunciado
 ; 
 ;----------------------------------------------
@@ -77,11 +77,11 @@ OceanoyFlota ENDP
 
 DefinirParametros PROC
 ;----------------------------------------------
-; Permite al usuario definir la dimension del oc閍no y el n鷐ero de barcos
+; Permite al usuario definir la dimension del oc茅ano y el n煤mero de barcos
 ; de cada tipo.
 ;----------------------------------------------
 
- t1: INVOKE IntroducirDimensionOceano	;Introducimos la dimensi髇 del oc閍no
+ t1: INVOKE IntroducirDimensionOceano	;Introducimos la dimensi贸n del oc茅ano
  cmp eax, 0								;Comprobamos que el valor no sea 0 o menor
  jle t1 
  mov DimOce, eax						;Guardamos el valor en la variable DimOce
@@ -136,7 +136,7 @@ loopBarcos1Ud:
  INVOKE GenerarPosicionAleatoria, DimOce	;Obtenemos la fila
  dec eax									;Compensamos para que el rango empiece en 0 en vez de 1
  imul eax, 12								;Calculamos el offset para las filas (6 posiciones * 2 bytes)
- lea edx, [Oceano+eax]						;Calculamos la direcci髇 de inicio de la fila y la guardamos en edx
+ lea edx, [Oceano+eax]						;Calculamos la direcci贸n de inicio de la fila y la guardamos en edx
  INVOKE GenerarPosicionAleatoria, DimOce	;Obtenemos la columna
  mov ebx, eax								;Guardamos la columna en ebx, luego la usaremos para calcular el offset de la posicion
  pop eax									;Recuperamos eax, nuestro "contador"
@@ -144,7 +144,7 @@ loopBarcos1Ud:
  mov [edx+ebx*2], ecx						;Posicionamos un barco en la posicion designada
  dec eax									;Decrementamos el contador
  cmp eax, 0									;Comprobamos si ya hemos colocado todos los barcos
- jg loopBarcos1UD
+ jg loopBarcos1Ud
 
  ret
 PosicionarFlota ENDP
@@ -178,7 +178,7 @@ Espera PROC
 Espera ENDP
 
 Jugar PROC
-; Permite controlar toda la l骻ica del juego
+; Permite controlar toda la l贸gica del juego
   
 
 
@@ -189,7 +189,7 @@ FinJugar:
 Jugar ENDP
 
 Comprobar PROC 
-  ; Permite comprobar si en una posici髇 hay agua o algun barco
+  ; Permite comprobar si en una posici贸n hay agua o algun barco
   
 
 
