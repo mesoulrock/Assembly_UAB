@@ -189,9 +189,9 @@ loopBarcos2Ud:
  dec ebx                                      ;Colocaremos el otro 2 a la izquierda de la casilla que se nos dio. Para ello resto 1 a ebx 
  push eax
  mov eax, [edx+ebx*2]
- cmp eax,0
- jne loopBarcos2Ud
- mov [edx+ebx*2], ecx
+ cmp eax,0                                    ;Si no es posible colocar (en este caso a la izquierda) del barco, desistimos y buscamos generar nuevas coordenadas. Si es posible,colocamos y en Or_done colocamos sobre la casilla que nos habia "tocado"
+ jne RecuperarPila                         
+ mov [edx+ebx*2], ecx 
  pop eax
  pop edx
  pop ebx
