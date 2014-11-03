@@ -138,25 +138,26 @@ loopBarcos1Ud:
  push ecx									;Guardamos ecx porque INVOKE alterará su valor
  INVOKE GenerarPosicionAleatoria, DimOce	;Obtenemos la fila
  dec eax									;Compensamos para que el rango empiece en 0 en vez de 1
- imul eax, 12								;Calculamos el offset para las filas (6 posiciones * 2 bytes)
+ imul eax, 24								;Calculamos el offset para las filas (6 posiciones * 4 bytes)
  lea edx, [Oceano+eax]						;Calculamos la direcciÃ³n de inicio de la fila y la guardamos en edx
  push edx									;Guardamos edx para no perder la direccion
  INVOKE GenerarPosicionAleatoria, DimOce	;Obtenemos la columna
+ dec eax
  mov ebx, eax								;Guardamos la columna en ebx, luego la usaremos para calcular el offset de la posicion
  pop edx
  pop ecx
 
  mov eax, [edx+ebx*2]
  cmp eax, 0
- jne loopBarcos1Ud
- mov [edx+ebx*2], ecx						;Posicionamos un barco en la posicion designada
  pop eax									;Recuperamos eax, nuestro "contador"
+ jne loopBarcos1Ud
+ mov [edx+ebx*4], ecx						;Posicionamos un barco en la posicion designada
  dec eax									;Decrementamos el contador
  cmp eax, 0									;Comprobamos si ya hemos colocado todos los barcos
  jg loopBarcos1Ud
 
 ;Posiciones barcos de 2 unidades
-mov eax, NBarcos2Unidades
+mov eax, NBarcos2Unidad
 mov ebx, 0
 mov ecx, 2 ;Consideramos 2 como un barco de 2 unidades
 mov edx, 0
@@ -167,105 +168,101 @@ loopBarcos2Ud:
  INVOKE GenerarPosicionAleatoria, DimOce
  pop ecx
  dec eax									
- imul eax, 12								
+ imul eax, 24								
  lea edx, [Oceano+eax]					
  push edx
  push ecx							
  INVOKE GenerarPosicionAleatoria, DimOce
+ dec eax
  pop ecx
  mov ebx, eax							
  pop edx
- mov eax, [edx+ebx*2]
+ mov eax, [edx+ebx*4]
  cmp eax, 0
+ pop eax
  jne loopBarcos2Ud            ; Si no saltamos aqui,quiere decir que podemos ocupar la casilla que nos ha salido. Pero hay que comprobar el segundo "espacio" que ha de ocupar el barco
+ 
+
+loopAuxB2_begin:
+ push eax
  push edx
  push ecx
  INVOKE GenerarPosicionAleatoria, 4         ;Generamos un valor del 1 al 4 para saber en que direccion orientamos el barco
  pop ecx
  pop edx
- push edx
  push ebx
- 
- ; Or_left:                                      Orientado hacia la izquierda
- cmp eax, 1 
- jne Or_right
- dec ebx                                      ;Colocaremos el otro 2 a la izquierda de la casilla que se nos dio. Para ello resto 1 a ebx 
- push eax
- mov eax, [edx+ebx*2]
- cmp eax,0                                    ;Si no es posible colocar (en este caso a la izquierda) del barco, desistimos y buscamos generar nuevas coordenadas. Si es posible,colocamos y en Or_done colocamos sobre la casilla que nos habia "tocado"
- jne RecuperarPila                         
- mov [edx+ebx*2], ecx 
- pop eax
- pop edx
- pop ebx
- jmp Or_done
-
- 
- 
- 
- Or_right:                                    ;Orientado hacia la derecha
+ push edx
  cmp eax, 2
- jne Or_up
- inc ebx                                     
- push eax
- mov eax, [edx+ebx*2]
- cmp eax,0
- jne RecuperarPila
- mov [edx+ebx*2], ecx
- pop eax
- pop edx
- pop ebx
- jmp Or_done
-  
-  
- Or_up:                                     ;Orientado hacia arriba
- cmp eax, 3                               
- jne Or_down
- ; A implementar: Restarle 1 fila (mediante edx) para comprobar justo arriba de la casilla en la que estoy
- push eax
- mov eax, [edx+ebx*2]
- cmp eax,0
- jne RecuperarPila
- mov [edx+ebx*2], ecx
- pop eax
- pop edx
- pop ebx
- jmp Or_done
- 
- 
- 
- Or_down:                                   ;Orientado hacia abajo
+ je loopAuxB2_up
+ cmp eax, 3
+ je loopAuxB2_right
  cmp eax, 4
- jne Or_done
- ; A implementar: sumarle 1 fila (mediante edx) para comprobar justo debajo de la casilla en la que estoy
- push eax
- mov eax, [edx+ebx*2]
- cmp eax,0
- jne RecuperarPila
- mov [edx+ebx*2], ecx
- pop eax
- pop edx
- pop ebx
- jmp Or_done
+ je loopAuxB2_down
  
- 
- RecuperarPila:   ; Cuando se interrumpe la comprobacion de up,down,left o right, en vez de volver directamente al loopBarcos2Ud, es necesario hacer unos pops para recuperar los valores. Aqui se hacen y se vuelve nuevamente al inicio. 
- pop eax           ;En cada Or_X habiamos hecho un push eax. Se hace el pop al acabarlo SI es posible colocar barco ahi. Si no,saltamos aqui,le hacemos pop y volvemos al bucle inicial
- pop edx           ; Antes de la seccion de los Or_X habiamos hecho push a edx y ebx. Nuevamente siolo les hacia el pop si podia acabar y colocar barco ahi. Si no,al ser interrumpido,salto aqui,los recupero y vuelvo al bucle inicial
- pop ebx
- pop eax           ;Hay un segundo pop eax. Este se haria en Or_done,pero no vamos ahÃ­. Esto nos devuelve el contador tal y como estaba al principio
- jmp loopBarcos2Ud
- 
- 
- Or_done:
- mov [edx+ebx*2], ecx					
- pop eax									
- dec eax								
- cmp eax, 0								
- jg loopBarcos2Ud
+;Posicionamos a izquierda (eax=1)
+ dec ebx
+ jmp loopAuxB2_pos
+
+loopAuxB2_up:
+ sub edx, 12
+ jmp loopAuxB2_pos
+
+loopAuxB2_right:
+ inc ebx
+ jmp loopAuxB2_pos
+
+loopAuxB2_down:
+ add edx, 12
+ jmp loopAuxB2_pos
  
 
+loopAuxB2_pos:
+;Comprobación margen izquierdo
+ cmp ebx, 0
+ jl loopAuxB2_rec
+
+;Comprobación margen derecho
+ cmp ebx, 5
+ jg loopAuxB2_rec
+
+;Comprobación margen superior
+ push edx
+ add edx, ebx
+ cmp edx, Oceano
+ pop edx
+ jl loopAuxB2_rec
+
+;Comprobación de margen inferior
+ push edx
+ push eax
+ add edx, ebx
+ lea eax, [Oceano+12*12]
+ cmp edx, eax
+ pop eax
+ pop edx
+ jg loopAuxB2_rec
+
+ push eax
+ mov eax,[edx+ebx*4]
+ cmp eax, 0
+ pop eax
+ jne loopAuxB2_rec
+ mov [edx+ebx*4], ecx
+ pop edx
+ pop ebx
+ mov [edx+ebx*4], ecx
+ pop eax
+ dec eax
+ cmp eax, 0
+ jg loopBarcos2Ud
  ret
+
+loopAuxB2_rec:
+ pop edx
+ pop ebx
+ pop eax
+ jmp loopAuxB2_begin
+
 PosicionarFlota ENDP
 
 
@@ -278,14 +275,14 @@ MostrarOceanoyFlota PROC
  mov edx, 0 ;Contendrá la direccion efectiva de cada fila
 loopShowFil:
  push eax
- imul eax, 12
+ imul eax, 24
  lea edx, [Oceano+eax]
  mov ebx, 0
  mov ecx, 1
  pop eax
 loopShowCol:
  push eax
- mov eax, [edx+ebx*2]
+ mov eax, [edx+ebx*4]
  push edx
  push ecx
  INVOKE MostrarOceano, eax, ecx
