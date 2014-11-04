@@ -114,12 +114,12 @@ PosicionarFlota PROC
  mov edx, 0 ;Contendra la direccion efectiva de cada fila
 loopResetFil:
  push eax  ;Necesitaremos el valor de eax para cuando tengamos que recorrer filas
- imul eax, 12
+ imul eax, 24
  lea edx, [Oceano+eax]
  mov ebx, 0
  pop eax
 loopResetCol:
- mov [edx+ebx*2], ecx
+ mov [edx+ebx*4], ecx
  inc ebx
  cmp ebx, 6
  jne loopResetCol
@@ -305,11 +305,34 @@ MostrarOceanoyFlota ENDP
 
 MostrarJuego PROC
 ; Permite recorrer la matriz y mostrarla por pantalla con el simbolo '-'
-  
 
-
-
-
+ mov eax, 0	;Guardará el inicio de cada fila
+ mov ebx, 0 ;Guardará el desplazamiento por columnas
+ mov ecx, 0 ;Guardará el numero de columna para la función
+ mov edx, 0 ;Contendrá la direccion efectiva de cada fila
+loopShowFil:
+ push eax
+ imul eax, 24
+ lea edx, [OceanoAux+eax]
+ mov ebx, 0
+ mov ecx, 1
+ pop eax
+loopShowCol:
+ push eax
+ mov eax, [edx+ebx*4]
+ push edx
+ push ecx
+ INVOKE MostrarOceano, eax, ecx
+ pop ecx
+ pop edx
+ pop eax
+ inc ebx
+ inc ecx
+ cmp ecx, 6
+ jle loopShowCol
+ inc eax
+ cmp eax, 6
+ jne loopShowFil
 
   ret
 MostrarJuego ENDP
@@ -323,10 +346,106 @@ Espera ENDP
 
 Jugar PROC
 ; Permite controlar toda la lÃ³gica del juego
-  
-  call MostrarOceanoyFlota
 
+;Set la matriz a '-' (no descubierto)
+ mov eax, 0	 ;Guardara el inicio de cada fila
+ mov ebx, 0  ;Guardara el desplazamiento por columnas
+ mov ecx, 45 ;Guardara el valor a introducir en la posicion (45 representa el simbolo '-')
+ mov edx, 0  ;Contendra la direccion efectiva de cada fila
+loopSetFil:
+ push eax  ;Necesitaremos el valor de eax para cuando tengamos que recorrer filas
+ imul eax, 24
+ lea edx, [OceanoAux+eax]
+ mov ebx, 0
+ pop eax
+loopSetCol:
+ mov [edx+ebx*4], ecx
+ inc ebx
+ cmp ebx, 6
+ jne loopSetCol
+ inc eax
+ cmp eax, 6
+ jne loopSetFil
 
+InicioJugar:
+ call MostrarJuego
+PromptFil:
+ lea eax, PosFila
+ INVOKE IntroducirFilaDondeDisparar, eax
+ mov al, PosFila
+ cmp al, 65      ; 65 = 'A'
+ jl PromptFil
+ cmp al, 70      ; 70 = 'F'
+ jg PromptFil
+PromptCol:
+ INVOKE IntroducirColDondeDisparar
+ cmp eax, 1
+ jl PromptCol
+ cmp eax, 6
+ jg PromptCol
+ mov PosCol, eax
+ 
+ComprobacionMatriz:
+ mov al, PosFila
+ mov ebx, PosCol
+ sub al, 65
+ sub ebx, 1
+
+ lea ecx, Oceano
+
+ ;Calculamos offset de la posicion
+ imul eax, 6*4
+ imul ebx, 4
+ 
+ ;Actualizamos dirección
+ add eax, ebx
+ push eax        ;El offset nos será útil para actualizar la matriz auxiliar
+ add ecx, eax
+ mov eax, [ecx]
+
+ ;Comprobacion de impacto
+ ;Agua
+ cmp eax, 0
+ jne CompB1UD
+ INVOKE MensajeAgua
+ INVOKE Espera
+ pop ebx
+ lea eax, [OceanoAux+ebx]
+ mov edx, 79
+ mov [eax], edx         ; 79 = O = Fallo
+ jmp InicioJugar
+
+CompB1UD:
+ cmp eax, 1
+ jne CompB2UD
+ push ecx
+ INVOKE MensajeTocadoyHundido
+ INVOKE Espera
+ ; Contador de tocados +1
+ pop ecx
+ mov edx, -1 ; usaremos -1 para barcos hundidos
+ mov [ecx], edx 
+ pop ebx
+ lea eax, [OceanoAux+ebx]
+ mov edx, 88        ; 88 = X = Tocado
+ mov [eax], edx 
+ jmp InicioJugar
+
+CompB2UD:
+ ;cmp eax, 2
+ ;jne CompB3UD
+ push ecx
+ ;deberia haber contador de posiciones de 2 unidades, se muestra tocado en la primera vez, hundido en la segunda
+ INVOKE MensajeTocado
+ ;INVOKE MensajeTocadoyHundido
+ pop ecx
+ mov edx, -1 ; usaremos -1 para barcos hundidos
+ mov [ecx], edx 
+ pop ebx
+ lea eax, [OceanoAux+ebx]
+ mov edx, 88
+ mov [eax], edx 
+ jmp InicioJugar
 
 
 FinJugar:
