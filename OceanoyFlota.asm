@@ -126,6 +126,14 @@ loopResetCol:
  cmp eax, 6
  jne loopResetFil
 
+;Posicion barco de 2 unidades
+ lea eax, Oceano
+ add eax, 4*6*4
+ add eax, 5*4
+ mov [eax], 2 ;Consideraremos 2 como un barco de 2 unidades
+ add eax, 6*4
+ mov [eax], 2
+
 ;Posiciones barcos de 1 unidad
  mov eax, NBarcos1Unidad
  mov ebx, 0
@@ -155,112 +163,7 @@ loopBarcos1Ud:
  cmp eax, 0									;Comprobamos si ya hemos colocado todos los barcos
  jg loopBarcos1Ud
 
-;Posiciones barcos de 2 unidades
-mov eax, NBarcos2Unidad
-mov ebx, 0
-mov ecx, 2 ;Consideramos 2 como un barco de 2 unidades
-mov edx, 0
-
-loopBarcos2Ud:
- push eax
- push ecx								
- INVOKE GenerarPosicionAleatoria, DimOce
- pop ecx
- dec eax									
- imul eax, 24								
- lea edx, [Oceano+eax]					
- push edx
- push ecx							
- INVOKE GenerarPosicionAleatoria, DimOce
- dec eax
- pop ecx
- mov ebx, eax							
- pop edx
- mov eax, [edx+ebx*4]
- cmp eax, 0
- pop eax
- jne loopBarcos2Ud            ; Si no saltamos aqui,quiere decir que podemos ocupar la casilla que nos ha salido. Pero hay que comprobar el segundo "espacio" que ha de ocupar el barco
- 
-
-loopAuxB2_begin:
- push eax
- push edx
- push ecx
- INVOKE GenerarPosicionAleatoria, 4         ;Generamos un valor del 1 al 4 para saber en que direccion orientamos el barco
- pop ecx
- pop edx
- push ebx
- push edx
- cmp eax, 2
- je loopAuxB2_up
- cmp eax, 3
- je loopAuxB2_right
- cmp eax, 4
- je loopAuxB2_down
- 
-;Posicionamos a izquierda (eax=1)
- dec ebx
- jmp loopAuxB2_pos
-
-loopAuxB2_up:
- sub edx, 12
- jmp loopAuxB2_pos
-
-loopAuxB2_right:
- inc ebx
- jmp loopAuxB2_pos
-
-loopAuxB2_down:
- add edx, 12
- jmp loopAuxB2_pos
- 
-
-loopAuxB2_pos:
-;Comprobación margen izquierdo
- cmp ebx, 0
- jl loopAuxB2_rec
-
-;Comprobación margen derecho
- cmp ebx, 5
- jg loopAuxB2_rec
-
-;Comprobación margen superior
- push edx
- add edx, ebx
- cmp edx, Oceano
- pop edx
- jl loopAuxB2_rec
-
-;Comprobación de margen inferior
- push edx
- push eax
- add edx, ebx
- lea eax, [Oceano+12*12]
- cmp edx, eax
- pop eax
- pop edx
- jg loopAuxB2_rec
-
- push eax
- mov eax,[edx+ebx*4]
- cmp eax, 0
- pop eax
- jne loopAuxB2_rec
- mov [edx+ebx*4], ecx
- pop edx
- pop ebx
- mov [edx+ebx*4], ecx
- pop eax
- dec eax
- cmp eax, 0
- jg loopBarcos2Ud
  ret
-
-loopAuxB2_rec:
- pop edx
- pop ebx
- pop eax
- jmp loopAuxB2_begin
 
 PosicionarFlota ENDP
 
