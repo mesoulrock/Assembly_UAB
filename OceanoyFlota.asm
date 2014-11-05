@@ -28,10 +28,10 @@ cont DWORD 0
 PosicionAleatoria DWORD 0
 Oceano DWORD 36 DUP (0)   ;Matriz de 36 posiciones (6x6) inicializado a 0
 OceanoAux DWORD 36 DUP (0) ;Matriz de 36 posiciones (6x6) inicializado a 0
-DimOce SDWORD 0
+DimOce SDWORD 6			;Por defecto, matriz de 6x6
 DimOceano SDWORD 0
-NBarcos1Unidad SDWORD 0
-NBarcos2Unidad SDWORD 0
+NBarcos1Unidad SDWORD 5	;Por defecto, 5 barcos de 1 unidad
+NBarcos2Unidad SDWORD 1 ;Por defecto, 1 de 2 unidades
 NBarcos3Unidad SDWORD 0
 PosFila DB ?     ; Ha de guardar un char
 PosCol DWORD ?
@@ -85,13 +85,12 @@ DefinirParametros PROC
  t1: INVOKE IntroducirDimensionOceano	;Introducimos la dimensiÃ³n del ocÃ©ano
  cmp eax, 0								;Comprobamos que el valor no sea 0 o menor
  jle t1 
- mov DimOce, eax						;Guardamos el valor en la variable DimOce
+ ;mov DimOce, eax						;Guardamos el valor en la variable DimOce (En nivel basico, dejamos la matriz a 6x6, el valor por defecto)
  
  t2: INVOKE IntroducirNumBarcosUnaUnidad
  cmp eax, 0
  jle t2 
  mov NBarcos1Unidad, eax
- mov NBarcos2Unidad, 1
 
  ;A implementar en otros niveles
  ;INVOKE IntroducirNumBarcosDosUnidad
@@ -367,8 +366,21 @@ loopSetCol:
  cmp eax, 6
  jne loopSetFil
 
+;Set el contador de "posiciones de barcos"
+ mov ebx, NBarcos1Unidad
+ mov eax, NBarcos2Unidad
+ imul eax, 2
+ add ebx, eax
+ ;mov eax, NBarcos3Unidad
+ ;imul eax, 3
+ ;add ebx, eax
+ mov cont, ebx
+
 InicioJugar:
  call MostrarJuego
+ INVOKE Espera
+ cmp cont, 0
+ je FinJugar
 PromptFil:
  lea eax, PosFila
  INVOKE IntroducirFilaDondeDisparar, eax
@@ -385,25 +397,34 @@ PromptCol:
  jg PromptCol
  mov PosCol, eax
  
-ComprobacionMatriz:
  mov al, PosFila
  mov ebx, PosCol
  sub al, 65
  sub ebx, 1
 
+ call Comprobar
+ jmp InicioJugar
+
+FinJugar:
+  ret
+Jugar ENDP
+
+Comprobar PROC 
+  ; Permite comprobar si en una posiciÃ³n hay agua o algun barco
+
  lea ecx, Oceano
 
- ;Calculamos offset de la posicion
+;Calculamos offset de la posicion
  imul eax, 6*4
  imul ebx, 4
  
- ;Actualizamos dirección
+;Actualizamos dirección
  add eax, ebx
  push eax        ;El offset nos será útil para actualizar la matriz auxiliar
  add ecx, eax
  mov eax, [ecx]
-
- ;Comprobacion de impacto
+  
+;Comprobacion de impacto
  ;Agua
  cmp eax, 0
  jne CompB1UD
@@ -413,7 +434,7 @@ ComprobacionMatriz:
  lea eax, [OceanoAux+ebx]
  mov edx, 79
  mov [eax], edx         ; 79 = O = Fallo
- jmp InicioJugar
+ jmp volver
 
 CompB1UD:
  cmp eax, 1
@@ -429,10 +450,14 @@ CompB1UD:
  lea eax, [OceanoAux+ebx]
  mov edx, 88        ; 88 = X = Tocado
  mov [eax], edx 
- jmp InicioJugar
+ mov eax, cont
+ dec eax
+ mov cont, eax 
+ jmp volver
 
 CompB2UD:
- ;cmp eax, 2
+ cmp eax, 2
+ jne CompElse
  ;jne CompB3UD
  push ecx
  ;deberia haber contador de posiciones de 2 unidades, se muestra tocado en la primera vez, hundido en la segunda
@@ -444,23 +469,18 @@ CompB2UD:
  pop ebx
  lea eax, [OceanoAux+ebx]
  mov edx, 88
- mov [eax], edx 
- jmp InicioJugar
+ mov [eax], edx
+ mov eax, cont
+ dec eax
+ mov cont, eax 
+ jmp volver
 
-
-FinJugar:
-  ret
-Jugar ENDP
-
-Comprobar PROC 
-  ; Permite comprobar si en una posiciÃ³n hay agua o algun barco
-  
-
-
-
+CompElse:
+ ;Podria mandarse un mensaje diciendo que la casilla ha sido marcada antes
+ pop eax
 
 volver:
-ret
+ ret
 Comprobar ENDP
 
 
