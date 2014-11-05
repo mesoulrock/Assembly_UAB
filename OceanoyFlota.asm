@@ -130,9 +130,10 @@ loopResetCol:
  lea eax, Oceano
  add eax, 4*6*4
  add eax, 5*4
- mov [eax], 2 ;Consideraremos 2 como un barco de 2 unidades
+ mov ebx, 2
+ mov [eax], ebx ;Consideraremos 2 como un barco de 2 unidades
  add eax, 6*4
- mov [eax], 2
+ mov [eax], ebx
 
 ;Posiciones barcos de 1 unidad
  mov eax, NBarcos1Unidad
@@ -198,9 +199,6 @@ loopShowCol:
  inc eax
  cmp eax, 6
  jne loopShowFil
-
-
-
 
   ret
 MostrarOceanoyFlota ENDP
@@ -345,9 +343,8 @@ CompB1UD:
  push ecx
  INVOKE MensajeTocadoyHundido
  INVOKE Espera
- ; Contador de tocados +1
  pop ecx
- mov edx, -1 ; usaremos -1 para barcos hundidos
+ mov edx, 4 ; usaremos 4 para barcos hundidos
  mov [ecx], edx 
  pop ebx
  lea eax, [OceanoAux+ebx]
@@ -367,7 +364,7 @@ CompB2UD:
  INVOKE MensajeTocado
  ;INVOKE MensajeTocadoyHundido
  pop ecx
- mov edx, -1 ; usaremos -1 para barcos hundidos
+ mov edx, 4 ; usaremos 4 para barcos hundidos
  mov [ecx], edx 
  pop ebx
  lea eax, [OceanoAux+ebx]
